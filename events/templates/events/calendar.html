@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calendar</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    th, td { border: 1px solid #ccc; height: 100px; vertical-align: top; padding: 4px; }
+    td.other { background: #f5f5f5; color: #999; }
+    td.today { background: #fff8d6; }
+    .holiday { color: #b00020; font-size: 0.8em; }
+    .event { background: #dbeafe; border-radius: 3px; margin-top: 2px; padding: 2px 4px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="{% url 'calendar_month' prev_year prev_month %}">&larr; Prev</a>
+    <h1>{{ month_name }} {{ year }}</h1>
+    <a href="{% url 'calendar_month' next_year next_month %}">Next &rarr;</a>
+  </div>
+
+  <table>
+    <tr>
+      {% for name in weekdays %}<th>{{ name }}</th>{% endfor %}
+    </tr>
+    {% for week in weeks %}
+    <tr>
+      {% for day in week %}
+      <td class="{% if not day.in_month %}other{% endif %} {% if day.is_today %}today{% endif %}">
+        <strong>{{ day.date.day }}</strong>
+        {% if day.holiday %}<div class="holiday">{{ day.holiday }}</div>{% endif %}
+        {% for e in day.events %}<div class="event">{{ e.title }}</div>{% endfor %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
