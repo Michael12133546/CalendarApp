@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST
 from .forms import EventForm
 from .models import Event
 
+from django.db.models import Q
+
 
 
 # Create your views here.
@@ -22,11 +24,10 @@ def calendar_view(request, year=None, month=None):
     us_holidays = holidays.US(years=[year - 1, year, year + 1])
 
     first_day, last_day = month_weeks[0][0], month_weeks[-1][-1]
-    events = Event.objects.filter(date__range=(first_day, last_day))
-    events_by_day = {}
-    for e in events:
-        events_by_day.setdefault(e.date, []).append(e)
-
+    events = Event.objects.filter(date__lte=last_day).filter(
+        Q(end_date__gte=first_day) | Q(end_date__isnull=True, date__gte=first_day)
+    )
+    
     weeks = [
         [
             {
@@ -34,7 +35,7 @@ def calendar_view(request, year=None, month=None):
                 "in_month": d.month == month,
                 "is_today": d == today,
                 "holiday": us_holidays.get(d),
-                "events": events_by_day.get(d, []),
+                "events": [e for e in events if e.occurs_on(d)],
             }
             for d in week
         ]
