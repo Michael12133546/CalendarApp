@@ -2,9 +2,12 @@ import calendar
 from datetime import date
 
 import holidays
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 
+from .forms import EventForm
 from .models import Event
+
 
 
 # Create your views here.
@@ -49,4 +52,22 @@ def calendar_view(request, year=None, month=None):
         "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     }
     return render(request, "events/calendar.html", context)
-    
+
+
+def add_event(request):
+    if request.method == "POST":
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save()
+            return redirect("calendar_month", year=event.date.year, month=event.date.month)
+    else:
+        form = EventForm(initial={"date": request.GET.get("date")})
+    return render(request, "events/add_event.html", {"form": form})
+
+
+@require_POST
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    year, month = event.date.year, event.date.month
+    event.delete()
+    return redirect("calendar_month", year=year, month=month)
