@@ -32,7 +32,7 @@
         <a href="{% url 'add_event' %}?date={{ day.date|date:'Y-m-d' }}">+</a>
         {% if day.holiday %}<div class="holiday">{{ day.holiday }}</div>{% endif %}
         {% for e in day.events %}
-        <div class="event">
+        <div class="event" style="background:{{ e.color}};">
           {{ e.title }}
           <form method="post" action="{% url 'delete_event' e.id %}" style="display:inline">
             {% csrf_token %}
